@@ -1,0 +1,8 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.itim {
+  font-family: 'Itim', cursive;
+}
