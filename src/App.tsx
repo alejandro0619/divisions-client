@@ -1,68 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Definimos el tipo de cada operación de división
-type Operacion = {
-  numerador: number;
-  denominador: number;
+// Define the type for each division operation
+type DivisionOperation = {
+  numerator: number;
+  denominator: number;
 };
 
-// Función para generar operaciones de división
-const generarOperaciones = (cantidad: number): Operacion[] => {
-  const operaciones: Operacion[] = [];
-  while (operaciones.length < cantidad) {
-    const numerador = Math.floor(Math.random() * 90) + 10; // Genera número entre 10 y 99
-    const denominador = Math.floor(Math.random() * 9) + 1; // Genera número entre 1 y 9 (evita 0)
+// Function to generate division operations
+const generateOperations = (count: number): DivisionOperation[] => {
+  const operations: DivisionOperation[] = [];
+  while (operations.length < count) {
+    const numerator = Math.floor(Math.random() * 90) + 10; // Generates number between 10 and 99
+    const denominator = Math.floor(Math.random() * 9) + 1; // Generates number between 1 and 9 (avoids 0)
     
-    // Asegura que la división es exacta
-    if (numerador % denominador === 0) {
-      operaciones.push({ numerador, denominador });
+    // Ensures the division is exact
+    if (numerator % denominator === 0) {
+      operations.push({ numerator, denominator });
     }
   }
-  return operaciones;
+  return operations;
 };
 
 const DivisionApp: React.FC = () => {
-  const [operaciones, setOperaciones] = useState<Operacion[]>([]);
-  const [seleccionada, setSeleccionada] = useState<Operacion | null>(null);
+  const [operations, setOperations] = useState<DivisionOperation[]>([]);
+  const [selectedOperation, setSelectedOperation] = useState<DivisionOperation | null>(null);
 
-  // Generar operaciones al cargar la página
+  // Generate operations when the page loads
   useEffect(() => {
-    setOperaciones(generarOperaciones(12)); // Genera 12 operaciones
+    setOperations(generateOperations(12)); // Generates 12 operations
   }, []);
 
   return (
     <div className="p-4">
-      <div className="grid grid-cols-3 gap-4"> {/* Grid de 3 columnas */}
-        {operaciones.map((operacion, index) => (
+      <div className="grid grid-cols-3 gap-4"> {/* 3-column grid */}
+        {operations.map((operation, index) => (
           <button
             key={index}
-            onClick={() => setSeleccionada(operacion)}
+            onClick={() => setSelectedOperation(operation)}
             className={`p-4 border rounded ${
-              seleccionada ? 'blur' : ''
+              selectedOperation ? 'blur' : ''
             } flex flex-col items-center`}
           >
-            <span className="text-2xl font-bold">{operacion.numerador}</span>
-            <span className="text-xl">——</span> {/* Línea de fracción */}
-            <span className="text-2xl font-bold">{operacion.denominador}</span>
+            <span className="text-2xl font-bold">{operation.numerator}</span>
+            <span className="text-xl">——</span> {/* Fraction line */}
+            <span className="text-2xl font-bold">{operation.denominator}</span>
           </button>
         ))}
       </div>
 
-      {/* Ventana emergente de operación seleccionada */}
+      {/* Pop-up for the selected operation */}
       <AnimatePresence>
-        {seleccionada && (
+        {selectedOperation && (
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.5, opacity: 0 }}
             className="fixed inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm"
-            onClick={() => setSeleccionada(null)}
+            onClick={() => setSelectedOperation(null)}
           >
             <div className="text-4xl font-bold text-center">
-              <div>{seleccionada.numerador}</div>
+              <div>{selectedOperation.numerator}</div>
               <div>——</div>
-              <div>{seleccionada.denominador}</div>
+              <div>{selectedOperation.denominator}</div>
             </div>
           </motion.div>
         )}
