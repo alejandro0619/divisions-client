@@ -3,6 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
-.itim {
-  font-family: 'Itim', cursive;
+.mano_del_gocho {
+  font-family: 'Gochi Hand';
+  font-size: 8rem;
+  line-height: 0.7;
+}
+
+body {
+  font-family: 'Itim';
 }
