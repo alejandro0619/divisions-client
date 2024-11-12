@@ -5,7 +5,15 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        gradientStart: '#E2E2E2',
+        gradientEnd: '#C9D6FF',
+      },
+      backgroundImage: {
+        'custom-gradient': 'linear-gradient(to right, var(--tw-gradient-stops))',
+      },
+    },
   },
   plugins: [],
 }

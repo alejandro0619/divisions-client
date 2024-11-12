@@ -8,7 +8,6 @@ import {
 import DropZone from "./Dropzones";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { section } from "framer-motion/client";
 
 export default function Dashboard() {
   const [operations, setOperations] = useState<DivisionOperation[]>([]);
@@ -49,24 +48,34 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-4">
-      <div className="grid grid-cols-3 gap-4">
-        {operations.map((operation, index) => (
-          <button
-            key={index}
-            onClick={() => {
-              setSelectedOperation(operation);
-              setResult([]); // Reset result on new selection
-              setIsCorrect(null); // Reset correctness
-            }}
-            className="p-4 border rounded flex flex-col items-center mano_del_gocho"
-          >
-            <span className="text-2xl font-bold">{operation.numerator}</span>
-            <span className="text-xl">——</span>
-            <span className="text-2xl font-bold">{operation.denominator}</span>
-          </button>
-        ))}
-      </div>
+    <div className="p-4 w-screen h-screen bg-gradient-to-r from-gradientStart to-gradientEnd">
+      <section className="relative flex w-full h-full justify-center items-center">
+        <div className="grid grid-cols-3 gap-1 relative z-10 w-[533px] h-[530px]">
+          {operations.map((operation, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setSelectedOperation(operation);
+                setResult([]); // Reset result on new selection
+                setIsCorrect(null); // Reset correctness
+              }}
+              className="border rounded-xl flex flex-col justify-center items-center mano_del_gocho bg-[#E6FFFA] opacity-95 m-2"
+            >
+              <span className="text-2xl font-bold">{operation.numerator}</span>
+              <span className="text-xl">——</span>
+              <span className="text-2xl font-bold">
+                {operation.denominator}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <img
+          src={`cat.svg`}
+          alt="no cargo lo siento mucho bobo"
+          className="absolute w-[533px] h-[530px] object-center opacity-50"
+        />
+      </section>
 
       <AnimatePresence>
         {selectedOperation && (
@@ -74,7 +83,7 @@ export default function Dashboard() {
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.5, opacity: 0 }}
-            className="fixed inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm"
+            className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-r from-gradientStart to-gradientEnd backdrop-blur-sm z-20"
           >
             <div className="font-bold text-center mb-4 mano_del_gocho">
               <div>{selectedOperation.numerator}</div>
@@ -117,13 +126,13 @@ export default function Dashboard() {
       {/* Numpad positioned at the center bottom */}
       {selectedOperation && (
         <section className="w-full flex justify-center">
-        <div className="fixed bottom-8  bg-gray-100 rounded-lg shadow-lg">
-          <div className="flex flex-wrap">
-            {Array.from({ length: 10 }, (_, i) => (
-              <NumpadItem key={i} number={i.toString()} />
-            ))}
+          <div className="fixed bottom-8  bg-gray-100 rounded-lg shadow-lg">
+            <div className="flex flex-wrap">
+              {Array.from({ length: 10 }, (_, i) => (
+                <NumpadItem key={i} number={i.toString()} />
+              ))}
+            </div>
           </div>
-        </div>
         </section>
       )}
     </div>
