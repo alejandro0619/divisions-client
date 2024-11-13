@@ -16,7 +16,7 @@ export default function Dropzone({ onDrop, children, index }: DropZoneProps) {
       return (
         <div
           ref={drop}
-          className="w-16 h-16 flex justify-center items-center bg-gray-200 m-2 border border-dashed"
+          className="w-[100px] h-[100px] flex justify-center items-center bg-gray-200 m-2 border border-dashed"
         >
           {children}
         </div>

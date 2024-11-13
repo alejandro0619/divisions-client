@@ -35,7 +35,7 @@ export default function Dashboard() {
   const renderDropZones = (resultLength: number) => {
     return Array.from({ length: resultLength }, (_, index) => (
       <DropZone key={index} onDrop={handleDrop} index={index}>
-        {result[index] || "❓"}
+        {result[index] || " "}
       </DropZone>
     ));
   };
@@ -50,7 +50,7 @@ export default function Dashboard() {
   return (
     <div className="p-4 w-screen h-screen bg-gradient-to-r from-gradientStart to-gradientEnd">
       <section className="relative flex w-full h-full justify-center items-center">
-        <div className="grid grid-cols-3 gap-1 relative z-10 w-[533px] h-[530px]">
+        <div className="grid grid-cols-3 gap-1 relative z-10 w-[650px] h-[650px]">
           {operations.map((operation, index) => (
             <button
               key={index}
@@ -73,7 +73,7 @@ export default function Dashboard() {
         <img
           src={`cat.svg`}
           alt="no cargo lo siento mucho bobo"
-          className="absolute w-[533px] h-[530px] object-center opacity-50"
+          className="absolute w-[650px] h-[650px] object-center opacity-50"
         />
       </section>
 
@@ -85,15 +85,23 @@ export default function Dashboard() {
             exit={{ scale: 0.5, opacity: 0 }}
             className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-r from-gradientStart to-gradientEnd backdrop-blur-sm z-20"
           >
-            <div className="font-bold text-center mb-4 mano_del_gocho">
-              <div>{selectedOperation.numerator}</div>
-              <div>——</div>
-              <div>{selectedOperation.denominator}</div>
-            </div>
-
-            {/* Render the drop zones dynamically based on result */}
-            <div className="w-fit h-20 flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed">
-              {renderDropZones(calculateResult(selectedOperation).length)}
+            <div className="flex font-bold text-center mb-4 mano_del_gocho bg-gray-200 p-10 rounded-xl relative w-[650px] justify-center border-black">
+              <div className="flex items-center gap-2  w-full rounded-xl p-4">
+                <div className="absolute right-2 top-2 z-25 flex gap-2">
+                  <span className="w-[20px] h-[20px] rounded-full bg-green-500 block" />
+                  <span className="w-[20px] h-[20px] rounded-full bg-yellow-500 block" />
+                  <span className="w-[20px] h-[20px] rounded-full bg-red-500 block" />
+                </div>
+                <span>
+                  <div>{selectedOperation.numerator}</div>
+                  <div>——</div>
+                  <div>{selectedOperation.denominator}</div>
+                </span>
+                ={/* Render the drop zones dynamically based on result */}
+                <div className="w-fit h-fit flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed">
+                  {renderDropZones(calculateResult(selectedOperation).length)}
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-4 justify-center w-[400px] items-center mt-4 ">
@@ -126,7 +134,7 @@ export default function Dashboard() {
       {/* Numpad positioned at the center bottom */}
       {selectedOperation && (
         <section className="w-full flex justify-center">
-          <div className="fixed bottom-8  bg-gray-100 rounded-lg shadow-lg">
+          <div className="fixed bottom-8  bg-gray-100 rounded-lg shadow-lg z-20">
             <div className="flex flex-wrap">
               {Array.from({ length: 10 }, (_, i) => (
                 <NumpadItem key={i} number={i.toString()} />
