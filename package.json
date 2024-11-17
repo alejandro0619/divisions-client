@@ -20,6 +20,7 @@
     "react-dom": "^18.3.1",
     "react-draggable": "^4.4.6",
     "react-hook-form": "^7.53.2",
+    "react-icons": "^5.3.0",
     "react-router-dom": "^6.28.0",
     "zod": "^3.23.8"
   },
@@ -37,6 +38,6 @@
     "tailwindcss": "^3.4.14",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.11.0",
-    "vite": "^5.4.10"
+    "vite": "^5.4.11"
   }
 }

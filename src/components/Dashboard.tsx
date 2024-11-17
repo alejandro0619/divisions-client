@@ -1,24 +1,55 @@
 import NumpadItem from "./Numpad";
-import {
-  generateOperations,
-  DivisionOperation,
-  calculateResult,
-  checkAnswer,
-} from "../utils";
+import { DivisionOperation } from "../types";
 import DropZone from "./Dropzones";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { generateDivisions, fetchDivisions } from "../utils";
+import { useLocation } from "react-router-dom";
 
 export default function Dashboard() {
-  const [operations, setOperations] = useState<DivisionOperation[]>([]);
+  const location = useLocation();
+
+  const [operations, setOperations] = useState<DivisionOperation[][]>([]);
   const [selectedOperation, setSelectedOperation] =
     useState<DivisionOperation | null>(null);
   const [result, setResult] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null); // Track if the answer is correct
+  const searchParams = new URLSearchParams(location.search);
+  const page =  ['1', '2', '3'].includes(searchParams.get('page') as string) ? searchParams.get('page') : '1' ;
 
-  // Generate operations on page load
   useEffect(() => {
-    setOperations(generateOperations(12));
+    generateDivisions().then(() =>
+      fetchDivisions().then((ops) => {
+        if (ops) {
+          console.log(ops);
+          const result: DivisionOperation[][] = []; // Array para almacenar las divisiones agrupadas
+          const chunkSize = 9; // Tamaño de cada grupo
+
+          ops.forEach((op: DivisionOperation, idx: number) => {
+            // Determinar en qué grupo debe ir la operación
+            const groupIndex = Math.floor(idx / chunkSize);
+
+            // Si no existe el grupo, inicializarlo
+            if (!result[groupIndex]) {
+              result[groupIndex] = [];
+            }
+
+            // Agregar la operación al grupo correspondiente
+            result[groupIndex].push(op);
+          });
+          console.log(result);
+          setOperations(result);
+          /*
+            Resultado esperado:
+            [
+              [primeras 9],
+              [segundas 9],
+              [las últimas 9],
+            ]
+          */
+        }
+      })
+    );
   }, []);
 
   // Function to handle dropping a number at a specific position
@@ -31,7 +62,14 @@ export default function Dashboard() {
     });
   };
 
-  // Function to render the drop zones based on the length of the result
+  // Function to calculate the number of DropZones based on the result length ohh si
+  const calculateResultLength = (operation: DivisionOperation | null) => {
+    if (!operation) return 0;
+    const result = operation.dividend / operation.divisor;
+    return result.toString().length;
+  };
+
+  // Function to render DropZones based on the result length
   const renderDropZones = (resultLength: number) => {
     return Array.from({ length: resultLength }, (_, index) => (
       <DropZone key={index} onDrop={handleDrop} index={index}>
@@ -47,35 +85,120 @@ export default function Dashboard() {
     setIsCorrect(null);
   };
 
+  const checkAnswer = async (
+    selectedOperation: DivisionOperation | null,
+    result: string[],
+    setIsCorrect: React.Dispatch<React.SetStateAction<boolean | null>>
+  ) => {
+    if (!selectedOperation) return;
+
+    // Convierte el resultado ingresado en un número
+    const enteredResult = parseInt(result.join(""), 10);
+
+    const correctResult =
+      selectedOperation.dividend / selectedOperation.divisor;
+
+    if (enteredResult !== correctResult) {
+      setIsCorrect(false);
+      console.error("Respuesta incorrecta");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8000/check-division", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          operation_id: selectedOperation.id,
+          result: enteredResult, // El resultado calculado
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setIsCorrect(true);
+        console.log(data.message);
+      } else {
+        setIsCorrect(false);
+        console.error(data.error);
+      }
+    } catch (error) {
+      console.error("Error validando la respuesta:", error);
+    }
+  };
+
   return (
     <div className="p-4 w-screen h-screen bg-gradient-to-r from-gradientStart to-gradientEnd">
       <section className="relative flex w-full h-full justify-center items-center">
         <div className="grid grid-cols-3 gap-1 relative z-10 w-[650px] h-[650px]">
-          {operations.map((operation, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setSelectedOperation(operation);
-                setResult([]); // Reset result on new selection
-                setIsCorrect(null); // Reset correctness
-              }}
-              className="border rounded-xl flex flex-col justify-center items-center mano_del_gocho bg-[#E6FFFA] opacity-95 m-2"
-            >
-              <span className="text-2xl font-bold">{operation.numerator}</span>
-              <span className="text-xl">——</span>
-              <span className="text-2xl font-bold">
-                {operation.denominator}
-              </span>
-            </button>
-          ))}
-        </div>
+          {page === "1" &&
+            operations[0] &&
+            operations[0].map((operation) => (
+              <button
+                key={operation.id}
+                onClick={() => {
+                  setSelectedOperation(operation);
+                  setResult([]);
+                  setIsCorrect(null);
+                }}
+                className="border rounded-xl flex flex-col justify-center items-center mano_del_gocho bg-[#E6FFFA] opacity-95 m-2"
+              >
+                <span className="text-2xl font-bold">{operation.dividend}</span>
+                <span className="text-xl">——</span>
+                <span className="text-2xl font-bold">{operation.divisor}</span>
+              </button>
+            ))}
 
+          {page === "2" &&
+            operations[1] &&
+            operations[1].map((operation) => (
+              <button
+                key={operation.id}
+                onClick={() => {
+                  setSelectedOperation(operation);
+                  setResult([]);
+                  setIsCorrect(null);
+                }}
+                className="border rounded-xl flex flex-col justify-center items-center mano_del_gocho bg-[#E6FFFA] opacity-95 m-2"
+              >
+                <span className="text-2xl font-bold">{operation.dividend}</span>
+                <span className="text-xl">——</span>
+                <span className="text-2xl font-bold">{operation.divisor}</span>
+              </button>
+            ))}
+
+          {page === "3" &&
+            operations[2] &&
+            operations[2].map((operation) => (
+              <button
+                key={operation.id}
+                onClick={() => {
+                  setSelectedOperation(operation);
+                  setResult([]);
+                  setIsCorrect(null);
+                }}
+                className="border rounded-xl flex flex-col justify-center items-center mano_del_gocho bg-[#E6FFFA] opacity-95 m-2"
+              >
+                <span className="text-2xl font-bold">{operation.dividend}</span>
+                <span className="text-xl">——</span>
+                <span className="text-2xl font-bold">{operation.divisor}</span>
+              </button>
+            ))}
+        </div>
         <img
           src={`cat.svg`}
-          alt="no cargo lo siento mucho bobo"
+          alt="no cargo lo siento mucho"
           className="absolute w-[650px] h-[650px] object-center opacity-50"
         />
       </section>
+      <button
+        onClick={generateDivisions}
+        className="p-4 bg-blue-700 text-white rounded-lg mt-4 mx-auto block"
+      >
+        Generate Divisions
+      </button>
 
       <AnimatePresence>
         {selectedOperation && (
@@ -93,13 +216,13 @@ export default function Dashboard() {
                   <span className="w-[20px] h-[20px] rounded-full bg-red-500 block" />
                 </div>
                 <span>
-                  <div>{selectedOperation.numerator}</div>
+                  <div>{selectedOperation.dividend}</div>
                   <div>——</div>
-                  <div>{selectedOperation.denominator}</div>
+                  <div>{selectedOperation.divisor}</div>
                 </span>
                 ={/* Render the drop zones dynamically based on result */}
                 <div className="w-fit h-fit flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed">
-                  {renderDropZones(calculateResult(selectedOperation).length)}
+                  {renderDropZones(calculateResultLength(selectedOperation))}
                 </div>
               </div>
             </div>
@@ -107,7 +230,7 @@ export default function Dashboard() {
             <div className="flex gap-4 justify-center w-[400px] items-center mt-4 ">
               <button
                 onClick={() =>
-                  checkAnswer({ selectedOperation, result, setIsCorrect })
+                  checkAnswer(selectedOperation, result, setIsCorrect)
                 }
                 className="p-4 bg-green-500 text-white rounded-lg w-1/3"
               >

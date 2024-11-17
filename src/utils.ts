@@ -1,36 +1,52 @@
-export type DivisionOperation = {
-  numerator: number;
-  denominator: number;
-};
+import { DivisionOperation } from "./types";
 
-export function generateOperations(count: number) {
-  const operations: DivisionOperation[] = [];
-  while (operations.length < count) {
-    const numerator = Math.floor(Math.random() * 90) + 10;
-    const denominator = Math.floor(Math.random() * 9) + 1;
+export const generateDivisions = async (): Promise<void> => {
+  try {
+    const username = localStorage.getItem("username");
 
-    if (numerator % denominator === 0) {
-      operations.push({ numerator, denominator });
+    const response = await fetch("http://localhost:8000/generate-divisions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username }),
+    });
+
+    // Intentar obtener datos JSON
+    let data;
+    try {
+      data = await response.json();
+      console.log("Datos recibidos:", data);
+    } catch (error) {
+      throw new Error("No se pudo parsear la respuesta como JSON");
     }
+
+  } catch (error) {
+    console.error("Error generando divisiones:", error);
   }
-  return operations;
-}
-
-// ------------------------------------
-
-// Calculate the result of the operation
-export const calculateResult = (operation: DivisionOperation): string => {
-  const result = operation.numerator / operation.denominator;
-  return result.toString();
 };
 
-export const checkAnswer = ({selectedOperation, result, setIsCorrect}: {
-    selectedOperation: DivisionOperation | null;
-    result: string[];
-    setIsCorrect: (isCorrect: boolean) => void;
-}) => {
-  if (!selectedOperation) return;
-  const correctAnswer = calculateResult(selectedOperation);
-  const userAnswer = result.join('');
-  setIsCorrect(userAnswer === correctAnswer);
+export const fetchDivisions = async (): Promise<DivisionOperation[] | null> => {
+  try {
+    // Obtener el nombre de usuario desde local
+    const username = localStorage.getItem("username");
+
+    const response = await fetch("http://localhost:8000/get-divisions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: username }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error al obtener las divisiones");
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("Error fetching divisions:", error);
+    return null;
+  }
 };

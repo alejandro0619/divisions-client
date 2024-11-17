@@ -19,7 +19,7 @@ function AuthPage() {
   });
 
   const onSubmit = async (data: LoginFormData | RegisterFormData) => {
-    const endpoint = isLogin ? "http://localhost:3000/login" : "http://localhost:3000/register";
+    const endpoint = isLogin ? "http://localhost:8000/login" : "http://localhost:8000/register";
     const body = JSON.stringify({
       username: data.username,
       password: data.password,
@@ -47,7 +47,7 @@ function AuthPage() {
         // Éxito: Almacenar username y redirigir
         localStorage.setItem("username", data.username); // Guarda el username
         alert(isLogin ? "¡Inicio de sesión exitoso!" : "¡Registro exitoso!");
-        window.location.href = "/dashboard"; // Redirigir al dashboard
+        window.location.href = "/dashboard?page=1"; // Redirigir al dashboard
       } else if (result.error) {
         // Error: Mostrar mensaje de error
         alert(`Error: ${result.error}`);
