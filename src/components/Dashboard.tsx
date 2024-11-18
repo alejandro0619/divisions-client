@@ -3,9 +3,8 @@ import { DivisionOperation } from "../types";
 import DropZone from "./Dropzones";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { generateDivisions, fetchDivisions } from "../utils";
+import { generateDivisions, fetchDivisions, calculateResultLength } from "../utils";
 import { useLocation } from "react-router-dom";
-
 export default function Dashboard() {
   const location = useLocation();
 
@@ -14,8 +13,13 @@ export default function Dashboard() {
     useState<DivisionOperation | null>(null);
   const [result, setResult] = useState<string[]>([]);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null); // Track if the answer is correct
+  // This should be improved for further code readability, but it works for now
+  // Checks if the page is either 1,2 or 3, if not. sets the page as 1 by default.
+  // This help us to drive the user flow to where we want, since we'll only be able to render 3 pages due to the
+  // apps requirements. Although this works, it doesn't change the URL, so the user will still think it's page X 
+  // but underneath it is not.
   const searchParams = new URLSearchParams(location.search);
-  const page =  ['1', '2', '3'].includes(searchParams.get('page') as string) ? searchParams.get('page') : '1' ;
+  const page = ['1', '2', '3'].includes(searchParams.get('page') as string) ? searchParams.get('page') : '1';
 
   useEffect(() => {
     generateDivisions().then(() =>
@@ -42,9 +46,9 @@ export default function Dashboard() {
           /*
             Resultado esperado:
             [
-              [primeras 9],
-              [segundas 9],
-              [las últimas 9],
+              [<9 operations>],
+              [<9 operations>],
+              [<9 operations>],
             ]
           */
         }
@@ -62,12 +66,7 @@ export default function Dashboard() {
     });
   };
 
-  // Function to calculate the number of DropZones based on the result length ohh si
-  const calculateResultLength = (operation: DivisionOperation | null) => {
-    if (!operation) return 0;
-    const result = operation.dividend / operation.divisor;
-    return result.toString().length;
-  };
+
 
   // Function to render DropZones based on the result length
   const renderDropZones = (resultLength: number) => {
@@ -188,7 +187,8 @@ export default function Dashboard() {
             ))}
         </div>
         <img
-          src={`cat.svg`}
+          // Loads a different background image depending on the page the user is on.
+          src={`${page == '1' ? 'cat.svg' : page == '2' ? 'dog.svg' : 'bunny.svg'}`}
           alt="no cargo lo siento mucho"
           className="absolute w-[650px] h-[650px] object-center opacity-50"
         />

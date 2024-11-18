@@ -50,3 +50,10 @@ export const fetchDivisions = async (): Promise<DivisionOperation[] | null> => {
     return null;
   }
 };
+
+
+export const calculateResultLength = (operation: DivisionOperation | null) => {
+  if (!operation) return 0;
+  const result = operation.dividend / operation.divisor;
+  return result.toString().length;
+};
