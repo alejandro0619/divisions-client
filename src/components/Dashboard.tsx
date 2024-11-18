@@ -12,6 +12,8 @@ export default function Dashboard() {
   const [selectedOperation, setSelectedOperation] =
     useState<DivisionOperation | null>(null);
   const [result, setResult] = useState<string[]>([]);
+  const [completedOperations, setCompletedOperations] = useState(new Set<number>());// Tracks all the operations that were succesfully resolved. It tracks them by its ID
+
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null); // Track if the answer is correct
   // This should be improved for further code readability, but it works for now
   // Checks if the page is either 1,2 or 3, if not. sets the page as 1 by default.
@@ -47,12 +49,17 @@ export default function Dashboard() {
     })
   }, []);
 
+  // Function to handle tracking the functions that are completed.
+  const markAsCompleted = (operationID: number) => {
+    setCompletedOperations((prev) => new Set(prev).add(operationID))
+  }
+
   // Function to handle dropping a number at a specific position
   const handleDrop = (item: { number: string }, index: number) => {
     setResult((prevResult) => {
       // Insert the dropped number at the clicked position
       const newResult = [...prevResult];
-      newResult.splice(index, 0, item.number); // Add number at the dropped position
+      newResult[index] = item.number
       return newResult;
     });
   };
@@ -84,8 +91,9 @@ export default function Dashboard() {
     if (!selectedOperation) return;
 
     // Return the digits entered as numbers instead of string.
-    const enteredResult = parseInt(result.join(""), 10);
+    const enteredResult = parseInt(result.filter((digit) => digit).join(""), 10);
 
+    console.log(enteredResult)
     const correctResult =
       selectedOperation.dividend / selectedOperation.divisor;
 
@@ -110,10 +118,12 @@ export default function Dashboard() {
       const data = await response.json();
       if (response.ok) {
         setIsCorrect(true);
-        console.log(data.message);
+        return true
       } else {
-        setIsCorrect(false);
         console.error(data.error);
+        setIsCorrect(false);
+        return false
+
       }
     } catch (error) {
       console.error("Error validando la respuesta:", error);
@@ -124,69 +134,59 @@ export default function Dashboard() {
     <div className="p-4 w-screen h-screen bg-gradient-to-r from-gradientStart to-gradientEnd">
       <section className="relative flex flex-col w-full h-full justify-center items-center">
         <div className="grid grid-cols-3 gap-1 relative z-10 w-[650px] h-[650px]">
-          {page === 1 &&
-            operations[0] &&
-            operations[0].map((operation) => (
-              <button
-                key={operation.id}
-                onClick={() => {
-                  setSelectedOperation(operation);
-                  setResult([]);
-                  setIsCorrect(null);
-                }}
-                className="border rounded-xl flex flex-col justify-center items-center mano_del_gocho bg-[#E6FFFA] opacity-95 m-2"
-              >
-                <span className="text-2xl font-bold">{operation.dividend}</span>
-                <span className="text-xl">——</span>
-                <span className="text-2xl font-bold">{operation.divisor}</span>
-              </button>
-            ))}
+          {operations[page - 1]?.map((operation, idx) => {
+            // Determina si la página actual está completada
+            const isPageCompleted = operations[page - 1].every((op) => op.is_solved === 1);
 
-          {page === 2 &&
-            operations[1] &&
-            operations[1].map((operation) => (
-              <button
-                key={operation.id}
-                onClick={() => {
-                  setSelectedOperation(operation);
-                  setResult([]);
-                  setIsCorrect(null);
-                }}
-                className="border rounded-xl flex flex-col justify-center items-center mano_del_gocho bg-[#E6FFFA] opacity-95 m-2"
-              >
-                <span className="text-2xl font-bold">{operation.dividend}</span>
-                <span className="text-xl">——</span>
-                <span className="text-2xl font-bold">{operation.divisor}</span>
-              </button>
-            ))}
+            // Determina si la página anterior está completada
+            const isPreviousPageCompleted = page === 1 || operations[page - 2]?.every((op) => op.is_solved === 1);
 
-          {page === 3 &&
-            operations[2] &&
-            operations[2].map((operation) => (
+            // Verifica si el ejercicio está completado
+            const isCompleted = operation.is_solved === 1;
+
+            // Identifica si es la operación actual
+            const isCurrent =
+              operations[page - 1].findIndex((op) => op.is_solved === 0) === idx;
+
+            // Bloquea el botón si no es completado, no es actual, o la página anterior no está completada
+            const isLocked = !isPreviousPageCompleted || (!isCompleted && !isCurrent);
+
+            return (
               <button
                 key={operation.id}
                 onClick={() => {
-                  setSelectedOperation(operation);
-                  setResult([]);
-                  setIsCorrect(null);
+                  if (!isLocked) {
+                    setSelectedOperation(operation);
+                    setResult([]);
+                    setIsCorrect(null);
+                  }
                 }}
-                className="border rounded-xl flex flex-col justify-center items-center mano_del_gocho bg-[#E6FFFA] opacity-95 m-2"
+                className={`border rounded-xl flex flex-col justify-center items-center mano_del_gocho bg-[#E6FFFA] opacity-95 m-2 ${isLocked ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
               >
-                <span className="text-2xl font-bold">{operation.dividend}</span>
-                <span className="text-xl">——</span>
-                <span className="text-2xl font-bold">{operation.divisor}</span>
+                {isLocked ? (
+                  <span className="text-4xl">🔒</span>
+                ) : isCompleted ? (
+                  <span className="text-4xl">✔️</span>
+                ) : (
+                  <>
+                    <span className="text-2xl font-bold">{operation.dividend}</span>
+                    <span className="text-xl">——</span>
+                    <span className="text-2xl font-bold">{operation.divisor}</span>
+                  </>
+                )}
               </button>
-            ))}
+            );
+          })}
         </div>
         <img
-          // Loads a different background image depending on the page the user is on.
-          src={`${page == 1 ? 'cat.svg' : page == 2 ? 'dog.svg' : 'bunny.svg'}`}
+          src={`${page === 1 ? 'cat.svg' : page === 2 ? 'dog.svg' : 'bunny.svg'}`}
           alt="no cargo lo siento mucho"
           className="absolute w-[650px] h-[650px] object-center opacity-50"
         />
-
-
       </section>
+
+
 
       {/* Upper right panel */}
       <section className="fixed right-5 top-2 bg-gray-200 p-4 w-fit h-fit rounded-xl flex flex-col gap-4">
@@ -238,13 +238,23 @@ export default function Dashboard() {
 
             <div className="flex gap-4 justify-center w-[400px] items-center mt-4 ">
               <button
-                onClick={() =>
-                  checkAnswer(selectedOperation, result, setIsCorrect)
-                }
+                onClick={() => {
+                  checkAnswer(selectedOperation, result, setIsCorrect).then((response) => {
+                    if (response) {
+                      // Si es correcto, márcalo como completado
+                      markAsCompleted(selectedOperation.id);
+                      setIsCorrect(true); // Actualiza el estado
+                      window.location.reload()
+                    } else {
+                      setIsCorrect(false); // Respuesta incorrecta
+                    }
+                  });
+                }}
                 className="p-4 bg-green-500 text-white rounded-lg w-1/3"
               >
-                Check Answer
+                Comprobar respuesta
               </button>
+
 
               <button
                 onClick={goBackToMain}
