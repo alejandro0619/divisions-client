@@ -57,3 +57,23 @@ export const calculateResultLength = (operation: DivisionOperation | null) => {
   const result = operation.dividend / operation.divisor;
   return result.toString().length;
 };
+
+
+export enum PAGE_ACTION {
+  NEXT,
+  BACK
+}
+/*
+ Describes the user interaction with the buttons: "Volver" and "Siguiente" which are options that are declared in the enum PAGE_ACTION. 
+ Refer to the function's internal code to understand its functionality.
+*/
+export const handlePage = (action: PAGE_ACTION, page: number) => {
+
+  if (action === PAGE_ACTION.BACK) {
+    page = page == 1 ? page : page - 1; // If page is 1, then return itself, if not and the user wants to go back, substract 1.
+    window.location.href = `/dashboard?page=${page}` // And redirect
+  } else {
+    page = page === 3 ? page : page + 1; // If page is 3, return itself, if not and the user wants to go forward, add 1.
+    window.location.href = `/dashboard?page=${page}` // And redirect
+  }
+}

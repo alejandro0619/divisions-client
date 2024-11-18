@@ -3,7 +3,7 @@ import { DivisionOperation } from "../types";
 import DropZone from "./Dropzones";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { generateDivisions, fetchDivisions, calculateResultLength } from "../utils";
+import { generateDivisions, fetchDivisions, calculateResultLength, handlePage, PAGE_ACTION } from "../utils";
 import { useLocation } from "react-router-dom";
 export default function Dashboard() {
   const location = useLocation();
@@ -19,41 +19,32 @@ export default function Dashboard() {
   // apps requirements. Although this works, it doesn't change the URL, so the user will still think it's page X 
   // but underneath it is not.
   const searchParams = new URLSearchParams(location.search);
-  const page = ['1', '2', '3'].includes(searchParams.get('page') as string) ? searchParams.get('page') : '1';
+  let page = [1, 2, 3].includes(parseInt(searchParams.get('page') as string)) ? parseInt(searchParams.get('page') as string) : 1;
 
   useEffect(() => {
-    generateDivisions().then(() =>
-      fetchDivisions().then((ops) => {
-        if (ops) {
-          console.log(ops);
-          const result: DivisionOperation[][] = []; // Array para almacenar las divisiones agrupadas
-          const chunkSize = 9; // Tamaño de cada grupo
+    fetchDivisions().then((ops) => {
+      if (ops) {
+        console.log(ops);
+        const result: DivisionOperation[][] = []; // Array to store the operations 
+        const chunkSize = 9; // Size of the groups
 
-          ops.forEach((op: DivisionOperation, idx: number) => {
-            // Determinar en qué grupo debe ir la operación
-            const groupIndex = Math.floor(idx / chunkSize);
+        ops.forEach((op: DivisionOperation, idx: number) => {
+          // Determine in which group the operation goes in
+          const groupIndex = Math.floor(idx / chunkSize);
 
-            // Si no existe el grupo, inicializarlo
-            if (!result[groupIndex]) {
-              result[groupIndex] = [];
-            }
+          // If the subgroup doesn't exist, create it
+          if (!result[groupIndex]) {
+            result[groupIndex] = [];
+          }
 
-            // Agregar la operación al grupo correspondiente
-            result[groupIndex].push(op);
-          });
-          console.log(result);
-          setOperations(result);
-          /*
-            Resultado esperado:
-            [
-              [<9 operations>],
-              [<9 operations>],
-              [<9 operations>],
-            ]
-          */
-        }
-      })
-    );
+          // Add the operation to its group
+          result[groupIndex].push(op);
+        });
+        console.log(result);
+        setOperations(result);
+
+      }
+    })
   }, []);
 
   // Function to handle dropping a number at a specific position
@@ -84,6 +75,7 @@ export default function Dashboard() {
     setIsCorrect(null);
   };
 
+
   const checkAnswer = async (
     selectedOperation: DivisionOperation | null,
     result: string[],
@@ -91,7 +83,7 @@ export default function Dashboard() {
   ) => {
     if (!selectedOperation) return;
 
-    // Convierte el resultado ingresado en un número
+    // Return the digits entered as numbers instead of string.
     const enteredResult = parseInt(result.join(""), 10);
 
     const correctResult =
@@ -111,7 +103,7 @@ export default function Dashboard() {
         },
         body: JSON.stringify({
           operation_id: selectedOperation.id,
-          result: enteredResult, // El resultado calculado
+          result: enteredResult, // The result calculated
         }),
       });
 
@@ -130,9 +122,9 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 w-screen h-screen bg-gradient-to-r from-gradientStart to-gradientEnd">
-      <section className="relative flex w-full h-full justify-center items-center">
+      <section className="relative flex flex-col w-full h-full justify-center items-center">
         <div className="grid grid-cols-3 gap-1 relative z-10 w-[650px] h-[650px]">
-          {page === "1" &&
+          {page === 1 &&
             operations[0] &&
             operations[0].map((operation) => (
               <button
@@ -150,7 +142,7 @@ export default function Dashboard() {
               </button>
             ))}
 
-          {page === "2" &&
+          {page === 2 &&
             operations[1] &&
             operations[1].map((operation) => (
               <button
@@ -168,7 +160,7 @@ export default function Dashboard() {
               </button>
             ))}
 
-          {page === "3" &&
+          {page === 3 &&
             operations[2] &&
             operations[2].map((operation) => (
               <button
@@ -188,17 +180,34 @@ export default function Dashboard() {
         </div>
         <img
           // Loads a different background image depending on the page the user is on.
-          src={`${page == '1' ? 'cat.svg' : page == '2' ? 'dog.svg' : 'bunny.svg'}`}
+          src={`${page == 1 ? 'cat.svg' : page == 2 ? 'dog.svg' : 'bunny.svg'}`}
           alt="no cargo lo siento mucho"
           className="absolute w-[650px] h-[650px] object-center opacity-50"
         />
+
+
       </section>
-      <button
-        onClick={generateDivisions}
-        className="p-4 bg-blue-700 text-white rounded-lg mt-4 mx-auto block"
-      >
-        Generate Divisions
-      </button>
+
+      {/* Upper right panel */}
+      <section className="fixed right-5 top-2 bg-gray-200 p-4 w-fit h-fit rounded-xl flex flex-col gap-4">
+        <h2 className="text-3xl text-center">
+          Opciones
+        </h2>
+        <button
+          onClick={generateDivisions}
+          className="p-4 bg-blue-700 text-white rounded-lg mt-5 mx-auto block"
+        >
+          Regenerar divisiones
+        </button>
+        <div className="flex gap-2 justify-center">
+          <button className="w-20 h-10 text-center bg-gray-300 rounded-xl" onClick={() => handlePage(PAGE_ACTION.BACK, page)}>
+            {"Volver"}
+          </button>
+          <button className="w-20 h-10 text-center bg-gray-300 rounded-xl" onClick={() => handlePage(PAGE_ACTION.NEXT, page)}>
+            {"Siguiente"}
+          </button>
+        </div>
+      </section>
 
       <AnimatePresence>
         {selectedOperation && (

@@ -39,9 +39,8 @@ function AuthPage() {
         alert(`Error: ${errorMessage}`);
         return;
       }
-  
       const result = await response.json();
-  
+    
       // Verificar respuesta exitosa o con error
       if (result.message) {
         // Éxito: Almacenar username y redirigir
