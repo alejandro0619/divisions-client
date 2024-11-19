@@ -12,7 +12,7 @@ export default function Dashboard() {
   const [selectedOperation, setSelectedOperation] =
     useState<DivisionOperation | null>(null);
   const [result, setResult] = useState<string[]>([]);
-  const [completedOperations, setCompletedOperations] = useState(new Set<number>());// Tracks all the operations that were succesfully resolved. It tracks them by its ID
+
 
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null); // Track if the answer is correct
   // This should be improved for further code readability, but it works for now
@@ -49,10 +49,7 @@ export default function Dashboard() {
     })
   }, []);
 
-  // Function to handle tracking the functions that are completed.
-  const markAsCompleted = (operationID: number) => {
-    setCompletedOperations((prev) => new Set(prev).add(operationID))
-  }
+
 
   // Function to handle dropping a number at a specific position
   const handleDrop = (item: { number: string }, index: number) => {
@@ -110,7 +107,7 @@ export default function Dashboard() {
     }
 
     try {
-      const response = await fetch("http://localhost:8000/check-division", {
+      const response = await fetch("https://smart-quality-antelope.ngrok-free.app/check-division", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,7 +143,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-3 gap-1 relative z-10 w-[650px] h-[650px]">
           {operations[page - 1]?.map((operation, idx) => {
             // Determina si la página actual está completada
-            const isPageCompleted = operations[page - 1].every((op) => op.is_solved === 1);
+            
 
             // Determina si la página anterior está completada
             const isPreviousPageCompleted = page === 1 || operations[page - 2]?.every((op) => op.is_solved === 1);
@@ -259,7 +256,7 @@ export default function Dashboard() {
                   checkAnswer(selectedOperation, result, setIsCorrect).then((response) => {
                     if (response) {
                       // Si es correcto, márcalo como completado
-                      markAsCompleted(selectedOperation.id);
+
                       setIsCorrect(true); // Actualiza el estado
                       window.location.reload()
                     } else {

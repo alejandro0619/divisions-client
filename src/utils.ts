@@ -4,7 +4,7 @@ export const generateDivisions = async (): Promise<void> => {
   try {
     const username = localStorage.getItem("username");
 
-    const response = await fetch("http://localhost:8000/generate-divisions", {
+    const response = await fetch("https://smart-quality-antelope.ngrok-free.app/generate-divisions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,7 +31,7 @@ export const fetchDivisions = async (): Promise<DivisionOperation[] | null> => {
     // Obtener el nombre de usuario desde local
     const username = localStorage.getItem("username");
 
-    const response = await fetch("http://localhost:8000/get-divisions", {
+    const response = await fetch("https://smart-quality-antelope.ngrok-free.app/get-divisions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -19,7 +19,7 @@ function AuthPage() {
   });
 
   const onSubmit = async (data: LoginFormData | RegisterFormData) => {
-    const endpoint = isLogin ? "http://localhost:8000/login" : "http://localhost:8000/register";
+    const endpoint = isLogin ? "https://smart-quality-antelope.ngrok-free.app/login" : "https://smart-quality-antelope.ngrok-free.app/register";
     const body = JSON.stringify({
       username: data.username,
       password: data.password,
