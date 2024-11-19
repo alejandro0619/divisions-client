@@ -7,7 +7,7 @@ import { generateDivisions, fetchDivisions, calculateResultLength, handlePage, P
 import { useLocation } from "react-router-dom";
 export default function Dashboard() {
   const location = useLocation();
-
+  const [loading, setLoading] = useState(false);
   const [operations, setOperations] = useState<DivisionOperation[][]>([]);
   const [selectedOperation, setSelectedOperation] =
     useState<DivisionOperation | null>(null);
@@ -64,6 +64,12 @@ export default function Dashboard() {
     });
   };
 
+  const handleGenerateDivisions = async () => {
+    setLoading(true); 
+    await generateDivisions(); // Generate divisions
+    setLoading(false);
+    window.location.reload(); 
+  };
 
 
   // Function to render DropZones based on the result length
@@ -131,8 +137,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="p-4 w-screen h-screen bg-gradient-to-r from-gradientStart to-gradientEnd">
-      <section className="relative flex flex-col w-full h-full justify-center items-center">
+    <div className="p-4 w-screen h-screen bg-gradient-to-r from-gradientStart to-gradientEnd overflow-hidden">
+    <h1 className="text-center py-4 text-black text-4xl font-bold">
+      ¡Aprendamos juntos!
+    </h1>
+    <section className="relative flex flex-col w-full h-[calc(100%-4rem)] justify-center items-center">
+    {/*<section className="flex flex-col w-full h-full justify-center items-center">*/}
         <div className="grid grid-cols-3 gap-1 relative z-10 w-[650px] h-[650px]">
           {operations[page - 1]?.map((operation, idx) => {
             // Determina si la página actual está completada
@@ -194,10 +204,17 @@ export default function Dashboard() {
           Opciones
         </h2>
         <button
-          onClick={generateDivisions}
+          onClick={() => {
+            const confirmRegenerate = window.confirm(
+              "Ten en cuenta que tu progreso actual se perderá. ¿Deseas continuar?"
+            );
+            if (confirmRegenerate) {
+              handleGenerateDivisions();
+            }
+          }}
           className="p-4 bg-blue-700 text-white rounded-lg mt-5 mx-auto block"
         >
-          Regenerar divisiones
+          {loading ? "Cargando..." : "Regenerar divisiones"}
         </button>
         <div className="flex gap-2 justify-center">
           <button className="w-20 h-10 text-center bg-gray-300 rounded-xl" onClick={() => handlePage(PAGE_ACTION.BACK, page)}>
@@ -252,7 +269,7 @@ export default function Dashboard() {
                 }}
                 className="p-4 bg-green-500 text-white rounded-lg w-1/3"
               >
-                Comprobar respuesta
+                Comprobar
               </button>
 
 
@@ -260,13 +277,13 @@ export default function Dashboard() {
                 onClick={goBackToMain}
                 className="p-4 bg-gray-500 text-white rounded-lg w-1/3"
               >
-                Back
+                Volver
               </button>
             </div>
 
             {isCorrect !== null && (
               <div className="mt-4 text-xl font-semibold">
-                {isCorrect ? "Correct Answer!" : "Incorrect Answer, Try Again!"}
+                {isCorrect ? "Respuesta Correcta!" : "Respuesta Incorrecta, Intenta de Nuevo!"}
               </div>
             )}
           </motion.div>
